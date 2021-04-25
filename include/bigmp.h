@@ -5,15 +5,16 @@
 #include <vector>
 #include <algorithm>
 #include <cstdint>
-#include <string_view>
 
 #include "nr.h"
 
 namespace bigmp {
 
-    template<typename container_t=unsigned, typename base_t=unsigned char>
+    template<typename container_t=uint32_t, typename base_t=uint8_t>
     class BigInt {
-        constexpr static auto IXZ = '0';
+        constexpr static char IXZ = '0';
+        constexpr static container_t MASK = 0xffU;
+        constexpr static container_t SHIFT = 8;
     public:
 
         explicit BigInt(const unsigned long r) {
@@ -328,9 +329,9 @@ namespace bigmp {
         BigInt& set(unsigned long r) {
             m_basevec.clear();
             while(r > 0) {
-                const auto bottom = r & 0xff;
+                const auto bottom = r & MASK;
                 m_basevec.insert(std::cbegin(m_basevec), bottom);
-                r >>= 8;
+                r >>= SHIFT;
             }
             return *this;
         }
@@ -341,12 +342,12 @@ namespace bigmp {
 
 
         constexpr static container_t lobyte(container_t x) {
-            const auto val = x & 0xff;
+            const auto val = x & MASK;
             return val;
         }
     
         constexpr static container_t hibyte(container_t x) {
-            const auto val = (x>>8) & 0xff;
+            const auto val = (x >> SHIFT) & MASK;
             return val;
         }
 
