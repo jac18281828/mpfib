@@ -2,9 +2,7 @@ cmake_minimum_required(VERSION 3.9)
 
 project(${PROJECT_NAME} LANGUAGES CXX VERSION 1.0.0)
 
-set(CMAKE_MAKE_PROGRAM make -j)
-
-add_compile_options(-std=c++20)
+add_compile_options(-std=c++20  -mmmx -msse -msse2 -mfpmath=sse)
 
 set(HDR include/bigmp.h)
 
