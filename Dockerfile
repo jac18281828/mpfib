@@ -1,6 +1,6 @@
 ARG VERSION=bullseye-slim
 
-FROM debian:${VERSION}
+FROM debian:${VERSION} 
 
 RUN export DEBIAN_FRONTEND=noninteractive && \
     apt update && \
@@ -26,4 +26,4 @@ RUN cmake --build ${BUILD} --verbose --config ${TYPE}
 ENV CTEST_OUTPUT_ON_FAILURE=1
 RUN (cd ${BUILD} && ctest)
 ENV PROJECT_NAME=${PROJECT}
-CMD build/${PROJECT_NAME} 100000
+CMD build/${PROJECT_NAME} 93

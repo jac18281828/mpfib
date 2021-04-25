@@ -110,10 +110,20 @@ TEST(BigMp, multi256x256) {
     BigInt a("256");
     BigInt b("256");
 
-    auto twox = a * b;
+    auto asq = a * b;
 
     auto expected = BigInt("65536");
-    ASSERT_EQ(expected, twox);
+    ASSERT_EQ(expected, asq);
+}
+
+TEST(BigMp, multi65535x65535) {
+    BigInt a("65535");
+    BigInt b("65535");
+
+    auto asq = a * b;
+
+    auto expected = BigInt("4294836225");
+    ASSERT_EQ(expected, asq);
 }
 
 TEST(BigMp, multi1) {
@@ -241,6 +251,15 @@ TEST(BigMp, multi65536_MoreThanWords) {
     ASSERT_EQ(BigInt("4,294,967,296"), shortsq);
 }
 
+TEST(BigMp, FFTMul1Digit) {
+    BigInt a("1");
+    BigInt b("3");
+
+    const auto three = a * b;
+
+    ASSERT_EQ(BigInt(3UL), three);
+}
+
 TEST(BigMp, Fib102) {
     BigInt fib100("573147844013817084101");
     BigInt fib101("927372692193078999176");
@@ -255,4 +274,60 @@ TEST(BigMp, Fib502) {
 
     BigInt fib502 = fib500 + fib501;
     ASSERT_EQ(BigInt("590606256885570541884749772942551428042092906415213688441386695785274827100237057501589632981816458291377"), fib502);
+}
+
+TEST(BigMp, BigInt) {
+    BigInt i1(4294967296UL);
+    BigInt i2(4294967296UL);
+
+    auto isq = i1 * i2;
+
+    ASSERT_EQ(BigInt("18446744073709551616"), isq);
+}
+
+TEST(BigMp, Sub1Dig) {
+    BigInt i1(127UL);
+    BigInt i2(126UL);
+
+    auto nil = i1 - i2;
+
+    ASSERT_EQ(BigInt(1UL), nil);
+}
+
+
+TEST(BigMp, BigSub) {
+    BigInt i1(4294967296UL);
+    BigInt i2(4294967296UL);
+
+    auto nil = i1 - i2;
+
+    ASSERT_EQ(BigInt(0UL), nil);
+}
+
+TEST(BigMp, DifferentPlaces) {
+    BigInt i1(4294967296UL);
+    BigInt i2(65536UL);
+
+    auto delta = i1 - i2;
+
+    ASSERT_EQ(BigInt(4294901760UL), delta);
+}
+
+TEST(BigMp, WithCarry) {
+    BigInt i1(4294967296UL);
+    BigInt i2(65535UL);
+
+    auto delta = i1 - i2;
+
+    ASSERT_EQ(BigInt(4294901761UL), delta);
+}
+
+TEST(BigMp, DISABLED_CSq) {
+
+    BigInt i1("6557470319842");
+    BigInt i2("6557470319842");
+
+    const auto isq = i1 * i2;
+
+    ASSERT_EQ(BigInt("43000416995608741778904964"), isq);
 }

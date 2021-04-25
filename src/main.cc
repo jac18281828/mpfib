@@ -1,21 +1,34 @@
 #include <cstdlib>
+#include <utility>
 
 #include "bigmp.h"
 
 namespace {
-auto fib(int n) {
-    bigmp::BigInt<unsigned, unsigned char> n_1(1UL), n_2(2UL);
-    if(n == 1) {
-        return n_1;
-    } else if(n == 2) {
-        return n_2;
-    } else {
-        for(int i=3; i<n; ++i) {
-            auto n_0 = n_1 + n_2;
-            n_1 = std::move(n_2);
-            n_2 = std::move(n_0);
-        }
-        return n_1 + n_2;
+
+using BigInt = bigmp::BigInt<unsigned int, unsigned char>;
+
+const BigInt n0(0UL);
+const BigInt n1(1UL);
+const BigInt n2(1UL);
+const BigInt n3(2UL);
+
+// a big pair
+std::pair<BigInt, BigInt> fib(int n) {
+    switch(n) {
+    case 0:
+        return std::make_pair(n0, n1);
+    case 1:
+        return std::make_pair(n1, n2);            
+    case 2:
+        return std::make_pair(n2, n3);        
+    default:
+        auto ab = fib(n / 2);
+        auto c = ab.first * ((ab.second * 2) - ab.first);
+        auto d = (ab.first * ab.first) + (ab.second * ab.second);
+        if (n % 2 == 0)
+            return std::make_pair(c, d);
+        else
+            return std::make_pair(d, c + d);
     }
 }
 }
@@ -24,8 +37,8 @@ int main(int argc, char* argv[]) {
 
     for(int i=1; i<argc; ++i) {
         const auto n = std::atol(argv[i]);
-        auto f = fib(n);
-        std::cout << f << std::endl;
+        auto fn = fib(n);
+        std::cout << fn.first << std::endl;
     }
 
     return EXIT_SUCCESS;

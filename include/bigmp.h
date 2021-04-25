@@ -5,17 +5,21 @@
 #include <vector>
 #include <algorithm>
 #include <cstdint>
-#include <string_view>
+#include <cmath>
 
 #include "nr.h"
 
 namespace bigmp {
 
-    template<typename container_t=unsigned, typename base_t=unsigned char>
+    template<typename container_t=unsigned long, typename base_t=unsigned char>
     class BigInt {
-        constexpr static auto IXZ = '0';
-    public:
+    private:
+        constexpr static char IXZ = '0';
+        constexpr static container_t BASE_MASK = 0xffU;
+        constexpr static container_t BASE_SATURATION = BASE_MASK+1U;
+        constexpr static container_t BASE_SHIFT = 8;
 
+    public:
         explicit BigInt(const unsigned long r) {
             (void)set(r);
         }
@@ -122,6 +126,43 @@ namespace bigmp {
             return *this + BigInt(d);
         }
 
+
+        // non negative subtraction!
+        BigInt operator-(BigInt const& other) const {
+            BigInt result;
+            auto& resvec = result.m_basevec;
+            const auto p = std::min(other.size(), size());
+            resvec.reserve(std::max(other.size(), size()));
+
+            container_t ireg = BASE_SATURATION;
+
+            auto iter = std::rbegin(m_basevec);
+            auto oter = std::rbegin(other.m_basevec);
+
+            while(iter != std::rend(m_basevec) && oter != std::rend(other.m_basevec)) {
+                ireg = BASE_MASK + *iter - *oter + hibyte(ireg);
+                resvec.insert(std::begin(resvec), lobyte(ireg));
+                ++iter; ++oter;
+            }
+
+            // keep on rolling!
+            while(iter != std::rend(m_basevec)) {
+                ireg = BASE_MASK + *iter + hibyte(ireg);
+                resvec.insert(std::begin(resvec), lobyte(ireg));
+                ++iter;
+            }
+
+            // check results            
+            const auto sign = hibyte(ireg);
+
+            if(sign == 0UL || oter != std::rend(other.m_basevec)) {
+                throw std::runtime_error("sign flip");
+            }
+
+            result.trim();
+            return result;
+        }
+
         BigInt& operator*=(const base_t iv) {
             if(m_basevec.empty()) m_basevec.push_back(0);
             container_t ireg = 0;
@@ -156,53 +197,13 @@ namespace bigmp {
             if(hival != 0) {
                 resvec.insert(std::begin(resvec), hibyte(ireg));
             }
+            result.trim();
             return result;
         }
 
         BigInt operator*(BigInt const& other) const {
             BigInt result;
-            auto& resvec = result.m_basevec;
-
-            constexpr double RX=256.0;
-            int j, nn=1;
-            double cy, t = 0.0;
-
-            const int n = m_basevec.size();
-            const int m = other.m_basevec.size();
-            const int p = n + m - 1;
-            resvec.reserve(p);
-            const auto n_max = std::max(m,n);
-            while(nn < n_max) nn <<= 1;
-            nn <<= 1;
-            std::vector<double> a(nn, 0.0);
-            for(j=0; j<n; j++) a[j] = m_basevec[j];
-            nr::realft(a, 1);
-            std::vector<double> b(nn, 0.0);
-            for(j=0; j<n; j++) b[j] = other.m_basevec[j];
-            nr::realft(b, 1);
-            b[0] *= a[0];
-            b[1] *= a[1];
-            for(j=2; j<nn; j+=2) {
-                t=b[j];
-                b[j] = t*a[j]-b[j+1]*a[j+1];
-                b[j+1]=t*a[j+1]+b[j+1]*a[j];
-            }
-            nr::realft(b, -1);
-            cy=0.0;
-            for(j=nn-1;j>=0;--j) {
-                t=b[j]/(nn >> 1)+cy+0.5;
-                cy=static_cast<unsigned long>(t/RX);
-                b[j]=t-cy*RX;
-            }
-            if(cy >= RX) 
-                throw std::runtime_error("Cannot happen in mul");
-            for(j=0;j<p;j++) result.m_basevec.push_back(0);
-            result.m_basevec[0] = static_cast<base_t>(cy);
-            const auto min_nmp = std::min(n+m,p);
-            for(j=1;j<min_nmp;++j) {
-                result.m_basevec[j] = static_cast<base_t>(b[j-1]);
-            }
-
+            // todo
             return result;
         }
 
@@ -249,11 +250,11 @@ namespace bigmp {
             return false;
         }
 
-        BigInt &operator/=(const container_t div) {
+        BigInt &operator/=(const base_t div) {
             container_t j, remainder{0};
             auto iter = std::begin(m_basevec);
             while(iter != std::end(m_basevec)) {
-                j = 256U * remainder + *iter;
+                j = BASE_SATURATION * remainder + *iter;
                 *iter = static_cast<base_t>(j / div);
                 remainder = j % div;
                 ++iter;
@@ -261,12 +262,12 @@ namespace bigmp {
             return *this;
         }
 
-        base_t operator%(const base_t modulus) const {
+        base_t operator%(const container_t modulus) const {
             if(m_basevec.empty()) return 0;
             container_t j, remainder{0};
             auto iter = std::begin(m_basevec);
             while(iter != std::end(m_basevec)) {            
-                j = 256U * remainder + *iter;
+                j = BASE_SATURATION * remainder + *iter;
                 remainder = j % modulus;
                 ++iter;
             }
@@ -310,7 +311,10 @@ namespace bigmp {
         }
 
         void trim() {
-            while(!m_basevec.empty() && m_basevec.front == 0) m_basevec.erase(0);
+            auto iter = std::begin(m_basevec);
+            while(iter != std::end(m_basevec) && *iter == 0) {
+                iter = m_basevec.erase(iter);
+            }
         }
 
         template <typename container, typename base>
@@ -328,9 +332,9 @@ namespace bigmp {
         BigInt& set(unsigned long r) {
             m_basevec.clear();
             while(r > 0) {
-                const auto bottom = r & 0xff;
+                const auto bottom = r & BASE_MASK;
                 m_basevec.insert(std::cbegin(m_basevec), bottom);
-                r >>= 8;
+                r >>= BASE_SHIFT;
             }
             return *this;
         }
@@ -341,12 +345,12 @@ namespace bigmp {
 
 
         constexpr static container_t lobyte(container_t x) {
-            const auto val = x & 0xff;
+            const auto val = x & BASE_MASK;
             return val;
         }
     
         constexpr static container_t hibyte(container_t x) {
-            const auto val = (x>>8) & 0xff;
+            const auto val = (x >> BASE_SHIFT) & BASE_MASK;
             return val;
         }
 

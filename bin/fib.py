@@ -1,31 +1,57 @@
-import sys
+import sys,math
 
 sys.setrecursionlimit(1000)
 
-save_value = {}
+#fast doubling algorithm
 
-def fib_rec(n):
-    if n <= 2:
-        return n
-    else:
-        if n in save_value:
-            return save_value[n]
-        else:
-            result = fib_rec(n-1) + fib_rec(n-2)
-            if n < 2048:
-                save_value[n] = result
-        return result
+TOPN = 50000
+MAXN = 500000
+prime_tab = []
 
+def is_prime(m):
+    for d in range(3, int(math.sqrt(m)), 2):    
+        if i % d == 0:
+            return False
+    return True
 
+prime_tab.append(2)
+for i in range(3, TOPN, 2):
+    if (is_prime(i)):
+        prime_tab.append(i)
+        
 def fib(n):
-  fiblist = [0]
-  for r in range(1, n):
-    if r < 10:
-        fiblist.append(fib_rec(r))
+    if n == 0:
+        return (0, 1)
     else:
-        fiblist.append(fiblist[-1] + fiblist[-2])
-  return fiblist[-1]+fiblist[-2]
+        a, b = fib(n // 2)
+        c = a * (b * 2 - a)
+        d = a * a + b * b
+        if n % 2 == 0:
+            return (c, d)
+        else:
+            return (d, c + d)
+
+def is_probably_prime(m):
+    for d in prime_tab:
+        if m % d == 0:
+            return False
+    for d in range(TOPN+1, MAXN, 2):
+        if is_prime(d) and m % d == 0:
+            return False
+    return True
 
 if len(sys.argv) > 1:
-    for n in sys.argv[1:]:
-        print(fib(int(n)))
+    check_prime = False
+    if sys.argv[1] == '-prime':
+        check_prime = True
+        args = sys.argv[2:]
+    else:
+        args = sys.argv[1:]
+    for n in args:
+        R = fib(int(n))[0]
+        if check_prime:
+            status = 'is probably prime' if is_probably_prime(R) else 'is not prime!'
+            valstr = str(R)
+            print(valstr + ' ' + status + ' with %d digits' % len(valstr))
+        else:
+            print(R)

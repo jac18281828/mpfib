@@ -11,14 +11,14 @@ TEST(IsPower2, Power2) {
 }
 
 TEST(RealFT, TestVec1) {
-    std::vector<double> x(16, 0.0);
+    std::vector<nr::DP> x(16, 0.0);
     x[0] = 1.0;
     nr::realft(x, 1);
     ASSERT_EQ(1.0, x[0]);
 }
 
 TEST(RealFT, TestVec2) {
-    std::vector<double> x(8, 1.0);
+    std::vector<nr::DP> x(8, 1.0);
     nr::realft(x, 1);
     ASSERT_EQ(8.0, x[0]);
 }
