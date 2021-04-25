@@ -11,12 +11,9 @@
 
 namespace bigmp {
 
-    template<typename container_t=unsigned long, typename base_t=unsigned int>
+    template<typename container_t=unsigned, typename base_t=unsigned char>
     class BigInt {
         constexpr static auto IXZ = '0';
-        constexpr static container_t WORD_MASK = 0xffffffffUL;
-        constexpr static container_t COMPLIMENT = 0x100000000UL;
-        constexpr static container_t WORD_SHIFT = 32;
     public:
 
         explicit BigInt(const unsigned long r) {
@@ -170,18 +167,18 @@ namespace bigmp {
             int j, nn=1;
             double cy, t = 0.0;
 
-            const int n = bytesize();
-            const int m = other.bytesize();
+            const int n = m_basevec.size();
+            const int m = other.m_basevec.size();
             const int p = n + m - 1;
-            resvec.reserve(p/4);
+            resvec.reserve(p);
             const auto n_max = std::max(m,n);
             while(nn < n_max) nn <<= 1;
             nn <<= 1;
             std::vector<double> a(nn, 0.0);
-            for(j=0; j<n; j++) a[j] = byteat(j);
+            for(j=0; j<n; j++) a[j] = m_basevec[j];
             nr::realft(a, 1);
             std::vector<double> b(nn, 0.0);
-            for(j=0; j<n; j++) b[j] = other.byteat(j);
+            for(j=0; j<n; j++) b[j] = other.m_basevec[j];
             nr::realft(b, 1);
             b[0] *= a[0];
             b[1] *= a[1];
@@ -199,12 +196,11 @@ namespace bigmp {
             }
             if(cy >= RX) 
                 throw std::runtime_error("Cannot happen in mul");
-
-            result = static_cast<uint8_t>(cy);
+            for(j=0;j<p;j++) result.m_basevec.push_back(0);
+            result.m_basevec[0] = static_cast<base_t>(cy);
             const auto min_nmp = std::min(n+m,p);
             for(j=1;j<min_nmp;++j) {
-                result *= 256U;
-                result += static_cast<uint8_t>(b[j-1]);
+                result.m_basevec[j] = static_cast<base_t>(b[j-1]);
             }
 
             return result;
@@ -257,7 +253,7 @@ namespace bigmp {
             container_t j, remainder{0};
             auto iter = std::begin(m_basevec);
             while(iter != std::end(m_basevec)) {
-                j = COMPLIMENT * remainder + *iter;
+                j = 256U * remainder + *iter;
                 *iter = static_cast<base_t>(j / div);
                 remainder = j % div;
                 ++iter;
@@ -270,7 +266,7 @@ namespace bigmp {
             container_t j, remainder{0};
             auto iter = std::begin(m_basevec);
             while(iter != std::end(m_basevec)) {            
-                j = COMPLIMENT * remainder + *iter;
+                j = 256U * remainder + *iter;
                 remainder = j % modulus;
                 ++iter;
             }
@@ -313,20 +309,6 @@ namespace bigmp {
             return 0;
         }
 
-        size_t bytesize() const {
-            return m_basevec.size()*4;
-        }
-
-        uint8_t byteat(const int offset) const {
-            const auto dx = offset >> 2;
-            auto ref = 3-(offset & 3);
-            auto base = m_basevec[dx];
-            while(ref-- > 0) {
-                base >>= 8;
-            }
-            return base & 0xff;
-        }
-
         void trim() {
             while(!m_basevec.empty() && m_basevec.front == 0) m_basevec.erase(0);
         }
@@ -346,9 +328,9 @@ namespace bigmp {
         BigInt& set(unsigned long r) {
             m_basevec.clear();
             while(r > 0) {
-                const auto bottom = r & WORD_MASK;
+                const auto bottom = r & 0xff;
                 m_basevec.insert(std::cbegin(m_basevec), bottom);
-                r >>= WORD_SHIFT;
+                r >>= 8;
             }
             return *this;
         }
@@ -359,12 +341,12 @@ namespace bigmp {
 
 
         constexpr static container_t lobyte(container_t x) {
-            const auto val = x & WORD_MASK;
+            const auto val = x & 0xff;
             return val;
         }
     
         constexpr static container_t hibyte(container_t x) {
-            const auto val = (x>>WORD_SHIFT) & WORD_MASK;
+            const auto val = (x>>8) & 0xff;
             return val;
         }
 

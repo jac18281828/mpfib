@@ -4,7 +4,7 @@
 
 namespace {
 auto fib(int n) {
-    bigmp::BigInt<unsigned, unsigned char> n_1(1UL), n_2(2UL);
+    bigmp::BigInt n_1(1UL), n_2(2UL);
     if(n == 1) {
         return n_1;
     } else if(n == 2) {
