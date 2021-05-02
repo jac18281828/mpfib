@@ -5,7 +5,7 @@
 
 This is a high-digit Fibonacci Prime calculator in C++.    My son and I spent about 30 minutes building a python program to get F(1000000) and then I spent about two weeks of spare time getting the same result in C++. 😅
 
-The 'BigInt class is an arbitrary precision math class that performs radix 256 math.
+The 'BigInt' class is an arbitrary precision math class that performs radix 256 math.
 
 Records:
 
