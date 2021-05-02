@@ -26,4 +26,4 @@ RUN cmake --build ${BUILD} --verbose --config ${TYPE}
 ENV CTEST_OUTPUT_ON_FAILURE=1
 RUN (cd ${BUILD} && ctest)
 ENV PROJECT_NAME=${PROJECT}
-CMD build/${PROJECT_NAME} 93
+CMD build/${PROJECT_NAME} 1000000

@@ -15,13 +15,7 @@ const BigInt n3(2UL);
 // a big pair
 std::pair<BigInt, BigInt> fib(int n) {
     switch(n) {
-    case 0:
-        return std::make_pair(n0, n1);
-    case 1:
-        return std::make_pair(n1, n2);            
-    case 2:
-        return std::make_pair(n2, n3);        
-    default:
+    default: {
         auto ab = fib(n / 2);
         auto c = ab.first * ((ab.second * 2) - ab.first);
         auto d = (ab.first * ab.first) + (ab.second * ab.second);
@@ -29,6 +23,13 @@ std::pair<BigInt, BigInt> fib(int n) {
             return std::make_pair(c, d);
         else
             return std::make_pair(d, c + d);
+    }
+    case 0:
+        return std::make_pair(n0, n1);
+    case 1:
+        return std::make_pair(n1, n2);            
+    case 2:
+        return std::make_pair(n2, n3);        
     }
 }
 }

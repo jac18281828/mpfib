@@ -26,7 +26,6 @@ enable_testing()
 add_executable(
         bigmp_test
         test/bigmp_test.cc
-        test/nr_test.cc
 )
 target_include_directories(bigmp_test PRIVATE include)
 target_link_libraries(
