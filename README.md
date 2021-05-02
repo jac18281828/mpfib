@@ -9,6 +9,7 @@ The 'BigInt' class is an arbitrary precision math class that performs radix 256 
 
 Records:
 
+| Index | Notes |
 | :---: | :----: |
 | F(10M) | 2089878 digits |
 | F(3340367) | probable prime! |
