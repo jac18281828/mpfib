@@ -5,7 +5,7 @@
 
 This is a high-digit Fibonacci Prime calculator in C++.    My son and I spent about 30 minutes building a python program to get F(1000000) and then I spent about two weeks of spare time getting the same result in C++. 😅
 
-The *bigmp* class is an arbitrary precision math class that performs radix 256 math at arbitrary precisison.
+The 'BigInt class is an arbitrary precision math class that performs radix 256 math.
 
 Records:
 
@@ -25,7 +25,7 @@ This is all rather interesesting, down right exciting, if this is the sort of th
 | '+' | arbitrary precision |
 | '*=' | multiplication | quick multiply from RADIX 256 single digit |
 | '*' | multiplication | quick multiply from RADIX 256 single digit |
-| '*' | multiplication | arbitrary precision based on log(n) fft approach |
+| '*' | multiplication | arbitrary precision based on Karatsuba approach |
 | '==' | equality | arbitrary precisiion |
 | '/' | division | quick division of a RADIX 256 digit |
 | '%' | modulus | quick mod from a RADIX 256 digit | 
