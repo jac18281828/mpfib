@@ -2,3 +2,4 @@
 .devcontainer
 Testing/
 build/
+.DS_Store

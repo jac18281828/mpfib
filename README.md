@@ -1,4 +1,5 @@
 # mpfib - Fast Doubling Fibonacci Primes Arbitrary Precision Calculator
+![Fibonacci](doc/fibonacci.png)
 
 # with Docker container for all environments
 # c++ '20
