@@ -1,11 +1,6 @@
-ARG VERSION=bullseye-slim
+ARG VERSION=102221
 
-FROM debian:${VERSION} 
-
-RUN export DEBIAN_FRONTEND=noninteractive && \
-    apt update && \
-    apt -y install build-essential gcc-10 cmake \
-        gdb python3
+FROM jac18281828/cppdev:${VERSION} 
 
 # build project
 WORKDIR /workspaces/mpfib
